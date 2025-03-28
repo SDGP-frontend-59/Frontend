@@ -13,8 +13,8 @@ export default function Contact() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     email: '',
-    project: '',
-    complaint_text: ''
+    name: '',
+    message: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -236,7 +236,7 @@ export default function Contact() {
     e.preventDefault();
 
     // Validate required fields
-    if (!formData.email || !formData.project || !formData.complaint_text) {
+    if (!formData.email || !formData.name || !formData.message) {
       setSuccessMessage('Please fill out all required fields.');
       return;
     }
@@ -258,8 +258,8 @@ export default function Contact() {
         setSuccessMessage(result.message || 'Complaint submitted successfully!');
         setFormData({
           email: '',
-          project: '',
-          complaint_text: ''
+          name: '',
+          message: ''
         });
       } else {
         console.error("Server error:", result.error);
@@ -347,33 +347,33 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="project" className="block text-sm font-medium mb-2">
-                      Project
+                    <label htmlFor="name" className="block text-sm font-medium mb-2">
+                      Name
                     </label>
                     <input
                       type="text"
-                      id="project"
-                      name="project"
-                      value={formData.project}
+                      id="name"
+                      name="name"
+                      value={formData.name}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 rounded-md focus:outline-none ${
                         isDarkMode 
                           ? 'bg-gray-800 border border-gray-700 focus:border-orange-500' 
                           : 'bg-gray-50 border border-gray-200 focus:border-orange-500'
                       }`}
-                      placeholder="Project Name"
+                      placeholder="Your Name"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="complaint_text" className="block text-sm font-medium mb-2">
-                    Complaint
+                  <label htmlFor="message" className="block text-sm font-medium mb-2">
+                    Message
                   </label>
                   <textarea
-                    id="complaint_text"
-                    name="complaint_text"
-                    value={formData.complaint_text}
+                    id="message"
+                    name="message"
+                    value={formData.message}
                     onChange={handleInputChange}
                     rows={6}
                     className={`w-full px-4 py-3 rounded-md focus:outline-none ${
@@ -381,7 +381,7 @@ export default function Contact() {
                         ? 'bg-gray-800 border border-gray-700 focus:border-orange-500' 
                         : 'bg-gray-50 border border-gray-200 focus:border-orange-500'
                     }`}
-                    placeholder="Your complaint here..."
+                    placeholder="Your message here..."
                     required
                   ></textarea>
                 </div>
