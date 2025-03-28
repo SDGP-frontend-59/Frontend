@@ -870,14 +870,14 @@ export default function LicensedPage() {
         setError(null);
 
         // Fetch license data
-        const licenseResponse = await fetch('https://ceylonminebackend.up.railway.app/miner/license');
+        const licenseResponse = await fetch('https://web-production-28de.up.railway.app/miner/license');
         if (!licenseResponse.ok) {
           throw new Error('Failed to fetch license data');
         }
         const licenseData = await licenseResponse.json();
 
         // Fetch royalty data
-        const royaltyResponse = await fetch('https://ceylonminebackend.up.railway.app/miner/royalty');
+        const royaltyResponse = await fetch('https://web-production-28de.up.railway.app/miner/royalty');
         if (!royaltyResponse.ok) {
           throw new Error('Failed to fetch royalty data');
         }
@@ -902,7 +902,7 @@ export default function LicensedPage() {
       try {
         setAnnouncementsLoading(true);
         setAnnouncementsError(null);
-        const response = await fetch('https://ceylonminebackend.up.railway.app/miner/announcements');
+        const response = await fetch('https://web-production-28de.up.railway.app/miner/announcements');
         if (!response.ok) {
           throw new Error('Failed to fetch announcements');
         }
