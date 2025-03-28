@@ -11,7 +11,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
+// h
 export const metadata: Metadata = {
   title: "CeylonMine",
   description: "Your mining solutions platform",
