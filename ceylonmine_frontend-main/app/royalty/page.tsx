@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 // import Image from "next/image"; // Commented out unused import
-import Link from "next/link";
+// import Link from "next/link";
 import RoyaltyCalculator from "../components/RoyaltyCalculator";
 import UserGreeting from "../components/UserGreeting";
 import MiningStats from "../components/MiningStats";
