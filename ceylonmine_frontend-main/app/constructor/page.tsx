@@ -5,6 +5,7 @@ import Head from 'next/head';
 import Navbar from "../navbar/page";
 import { motion, useScroll, useTransform } from 'framer-motion';
 import * as THREE from 'three';
+import Cookies from "js-cookie";
 
 interface LicenseData {
   license_status: string;
@@ -53,14 +54,14 @@ export default function LicensedPage() {
         setError(null);
 
         // Fetch license data
-        const licenseResponse = await fetch('http://127.0.0.1:5001/miner/license');
+        const licenseResponse = await fetch('https://web-production-28de.up.railway.app/miner/license');
         if (!licenseResponse.ok) {
           throw new Error('Failed to fetch license data');
         }
         const licenseData = await licenseResponse.json();
 
         // Fetch royalty data
-        const royaltyResponse = await fetch('http://127.0.0.1:5001/miner/royalty');
+        const royaltyResponse = await fetch('https://web-production-28de.up.railway.app/miner/royalty');
         if (!royaltyResponse.ok) {
           throw new Error('Failed to fetch royalty data');
         }
@@ -83,32 +84,48 @@ export default function LicensedPage() {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        console.log('Fetching announcements...');
         setAnnouncementsLoading(true);
         setAnnouncementsError(null);
+        const userid = Cookies.get("id");
+        console.log("userid ", userid);
 
-        const response = await fetch('http://127.0.0.1:5001/miner/announcements');
-        console.log('Announcements response:', response);
+        const response = await fetch('https://web-production-28de.up.railway.app/miner/announcements');
 
         if (!response.ok) {
           throw new Error('Failed to fetch announcements');
         }
 
         const data = await response.json();
-        console.log('Announcements data:', data);
+        console.log('Raw announcements data:', data);
 
-        // Transform the data to match the interface
-        const formattedAnnouncements: Announcement[] = data.announcements.map((content: string, index: number) => ({
-          content,
-          id: index + 1,
-          created_at: new Date().toISOString() // Use current date since backend doesn't provide dates
-        }));
+        // Check if data exists and has the expected structure
+        if (data && Array.isArray(data)) {
+          // If data is directly an array
+          const formattedAnnouncements: Announcement[] = data.map((item: any, index: number) => ({
+            content: item.content || item.toString(),
+            id: item.id || index + 1,
+            created_at: item.created_at || new Date().toISOString()
+          }));
+          setAnnouncements(formattedAnnouncements);
+        } else if (data && data.announcements && Array.isArray(data.announcements)) {
+          // If data has an announcements property that is an array
+          const formattedAnnouncements: Announcement[] = data.announcements.map((item: any, index: number) => ({
+            content: item.content || item.toString(),
+            id: item.id || index + 1,
+            created_at: item.created_at || new Date().toISOString()
+          }));
+          setAnnouncements(formattedAnnouncements);
+        } else {
+          // If the data structure is unexpected
+          console.error('Unexpected data structure:', data);
+          setAnnouncementsError('Invalid data format received from server');
+          setAnnouncements([]);
+        }
 
-        console.log('Formatted announcements:', formattedAnnouncements);
-        setAnnouncements(formattedAnnouncements);
       } catch (err) {
         console.error('Error in fetchAnnouncements:', err);
         setAnnouncementsError(err instanceof Error ? err.message : 'An error occurred');
+        setAnnouncements([]); // Set empty array on error
       } finally {
         setAnnouncementsLoading(false);
       }

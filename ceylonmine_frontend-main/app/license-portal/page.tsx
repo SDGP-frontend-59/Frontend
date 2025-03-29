@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -7,31 +5,62 @@ import Navbar from '../navbar/page';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import * as THREE from 'three';
+import { useRouter } from 'next/navigation';
 
 export default function LicensePortal() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [selectedStory, setSelectedStory] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const canvasRef = useRef(null);
+  const router = useRouter();
 
-  // Initialize theme from localStorage on component mount
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('token='))
+        ?.split('=')[1];
+      
+      const storedUser = localStorage.getItem('user');
+      
+      if (!token || !storedUser) {
+        router.push('/login');
+        return;
+      }
+
+      setIsLoggedIn(true);
+      setIsLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    window.addEventListener('storage', checkAuth);
+    window.addEventListener('authChange', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('authChange', checkAuth);
+    };
+  }, [router]);
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const initialDarkMode = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
     setIsDarkMode(initialDarkMode);
 
-    // Apply theme class to document
     if (initialDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    
-    // Listen for theme changes from other components
+
     const handleThemeChange = (event) => {
       setIsDarkMode(event.detail.isDarkMode);
       
-      // Apply to html element
       if (event.detail.isDarkMode) {
         document.documentElement.classList.add('dark');
       } else {
@@ -40,33 +69,28 @@ export default function LicensePortal() {
     };
     
     window.addEventListener('themeChange', handleThemeChange);
-    
+
     return () => {
       window.removeEventListener('themeChange', handleThemeChange);
     };
   }, []);
 
-  // Toggle dark/light mode
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
 
-    // Apply to html element
     if (newTheme) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
 
-    // Save preference
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
 
-    // Emit themeChange event for other components
     const event = new CustomEvent('themeChange', { detail: { isDarkMode: newTheme } });
     window.dispatchEvent(event);
   };
 
-  // Licenses data
   const licenses = [
     {
       id: 1,
@@ -102,43 +126,37 @@ export default function LicensePortal() {
     }
   ];
 
-  // Success stories data
   const successStories = [
-    
-      {
-        "title": "Bogala Mining Corp",
-        "region": "Western Mountains",
-        "license": "Type C License",
-        "description": "Achieved a 40% increase in operational efficiency while reducing environmental impact by 35% through our comprehensive licensing framework.",
-        "fullCaseStudy": "Sierra Gold Mining Corp has successfully transformed its operations in the challenging terrains of the Western Mountains through innovative technologies and a rigorous licensing framework. The company adopted advanced mining techniques that improved extraction efficiency while simultaneously reducing its environmental impact. By investing in eco-friendly practices such as waste recycling, water conservation, and emission controls, Sierra Gold Mining Corp achieved significant operational gains. Extensive staff training ensured adherence to strict safety and environmental protocols, reinforcing a commitment to sustainable practices. Collaborative efforts with local stakeholders further optimized resource use and minimized ecological disruption. This comprehensive approach has positioned the company as a leader in responsible mining, setting new industry standards and inspiring similar practices across the sector. The strategic blend of technology, training, and community engagement continues to drive both economic growth and environmental stewardship."
-      },
-      {
-        "title": "Kiridiwalla Minerals",
-        "region": "Coastal Lowlands",
-        "license": "Type B License",
-        "description": "Streamlined their medium-scale operations, reducing approval and compliance time by 60%.",
-        "fullCaseStudy": "Blue Ocean Minerals redefined its operational framework along the Coastal Lowlands by implementing streamlined processes that significantly reduced approval and compliance times. The company integrated state-of-the-art management systems that allowed for real-time monitoring and prompt regulatory reporting. This initiative not only enhanced operational efficiency but also ensured that environmental and safety standards were rigorously upheld. Collaborations with local authorities and industry experts helped develop a robust compliance protocol, enabling swift responses to emerging challenges. This agile approach optimized resource allocation and improved project turnaround times while maintaining high environmental stewardship. The proactive measures have positioned Blue Ocean Minerals as an innovator in the medium-scale mining sector, setting new benchmarks for operational speed, efficiency, and regulatory adherence."
-      },
-      {
-        "title": "Northern Mine",
-        "region": "Arctic Circle",
-        "license": "Type D License",
-        "description": "Secured expedited approval for specialized rare earth mineral extraction.",
-        "fullCaseStudy": "Operating in the demanding conditions of the Arctic Circle, Northern Light Rare Metals embarked on a pioneering project to extract rare earth minerals using cutting-edge technology. The company secured expedited approval through a collaborative regulatory approach that prioritized both rapid project initiation and environmental protection. Leveraging specialized extraction techniques designed for extreme climates, the project minimized energy consumption and reduced environmental disturbances. Significant investments in research and development allowed adaptation to unique challenges such as permafrost preservation and wildlife conservation. Northern Light Rare Metals’ commitment to sustainable practices resulted in a successful balance between operational excellence and environmental care. This project stands as a testament to the potential of innovative mining practices in harsh environments, setting a new industry standard for rare earth mineral extraction in the Arctic."
-      },
-      {
-        "title": "Kahatagala Mining Cooperative",
-        "region": "Central Valley",
-        "license": "Type A License",
-        "description": "A small-scale community-based operation that achieved full compliance within 30 days.",
-        "fullCaseStudy": "Greenfield Mining Cooperative, a community-based operation in the heart of Central Valley, has demonstrated that size does not limit impact. By engaging directly with local authorities and environmental agencies, the cooperative rapidly achieved full regulatory compliance. Adopting a proactive strategy, it combined traditional mining knowledge with modern safety and environmental practices. This approach enabled the operation to meet stringent regulatory standards within an unprecedented 30-day period while fostering strong community relationships based on trust and shared goals. The cooperative’s model emphasizes transparency, collaborative planning, and local engagement, which not only accelerated compliance but also promoted sustainable development. Today, Greenfield Mining Cooperative serves as a beacon for responsible mining practices, balancing economic progress with environmental and social stewardship."
-      },
-      
-    
-    
+    {
+      title: "Bogala Mining Corp",
+      region: "Western Mountains",
+      license: "Type C License",
+      description: "Achieved a 40% increase in operational efficiency while reducing environmental impact by 35% through our comprehensive licensing framework.",
+      fullCaseStudy: "Sierra Gold Mining Corp has successfully transformed its operations in the challenging terrains of the Western Mountains through innovative technologies and a rigorous licensing framework. The company adopted advanced mining techniques that improved extraction efficiency while simultaneously reducing its environmental impact. By investing in eco-friendly practices such as waste recycling, water conservation, and emission controls, Sierra Gold Mining Corp achieved significant operational gains. Extensive staff training ensured adherence to strict safety and environmental protocols, reinforcing a commitment to sustainable practices. Collaborative efforts with local stakeholders further optimized resource use and minimized ecological disruption. This comprehensive approach has positioned the company as a leader in responsible mining, setting new industry standards and inspiring similar practices across the sector. The strategic blend of technology, training, and community engagement continues to drive both economic growth and environmental stewardship."
+    },
+    {
+      title: "Kiridiwalla Minerals",
+      region: "Coastal Lowlands",
+      license: "Type B License",
+      description: "Streamlined their medium-scale operations, reducing approval and compliance time by 60%.",
+      fullCaseStudy: "Blue Ocean Minerals redefined its operational framework along the Coastal Lowlands by implementing streamlined processes that significantly reduced approval and compliance times. The company integrated state-of-the-art management systems that allowed for real-time monitoring and prompt regulatory reporting. This initiative not only enhanced operational efficiency but also ensured that environmental and safety standards were rigorously upheld. Collaborations with local authorities and industry experts helped develop a robust compliance protocol, enabling swift responses to emerging challenges. This agile approach optimized resource allocation and improved project turnaround times while maintaining high environmental stewardship. The proactive measures have positioned Blue Ocean Minerals as an innovator in the medium-scale mining sector, setting new benchmarks for operational speed, efficiency, and regulatory adherence."
+    },
+    {
+      title: "Northern Mine",
+      region: "Arctic Circle",
+      license: "Type D License",
+      description: "Secured expedited approval for specialized rare earth mineral extraction.",
+      fullCaseStudy: "Operating in the demanding conditions of the Arctic Circle, Northern Light Rare Metals embarked on a pioneering project to extract rare earth minerals using cutting-edge technology. The company secured expedited approval through a collaborative regulatory approach that prioritized both rapid project initiation and environmental protection. Leveraging specialized extraction techniques designed for extreme climates, the project minimized energy consumption and reduced environmental disturbances. Significant investments in research and development allowed adaptation to unique challenges such as permafrost preservation and wildlife conservation. Northern Light Rare Metals’ commitment to sustainable practices resulted in a successful balance between operational excellence and environmental care. This project stands as a testament to the potential of innovative mining practices in harsh environments, setting a new industry standard for rare earth mineral extraction in the Arctic."
+    },
+    {
+      title: "Kahatagala Mining Cooperative",
+      region: "Central Valley",
+      license: "Type A License",
+      description: "A small-scale community-based operation that achieved full compliance within 30 days.",
+      fullCaseStudy: "Greenfield Mining Cooperative, a community-based operation in the heart of Central Valley, has demonstrated that size does not limit impact. By engaging directly with local authorities and environmental agencies, the cooperative rapidly achieved full regulatory compliance. Adopting a proactive strategy, it combined traditional mining knowledge with modern safety and environmental practices. This approach enabled the operation to meet stringent regulatory standards within an unprecedented 30-day period while fostering strong community relationships based on trust and shared goals. The cooperative’s model emphasizes transparency, collaborative planning, and local engagement, which not only accelerated compliance but also promoted sustainable development. Today, Greenfield Mining Cooperative serves as a beacon for responsible mining practices, balancing economic progress with environmental and social stewardship."
+    },
   ];
 
-  // Enhanced 3D background effect (same as homepage)
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -197,12 +215,10 @@ export default function LicensePortal() {
     };
     animate();
 
-    // Function to update particle color based on theme
     const updateParticleColor = () => {
       particlesMaterial.color.set(isDarkMode ? 0xD2B48C : 0xFFD700);
     };
 
-    // Listen for theme changes
     const themeChangeListener = (event) => {
       if (event.detail && event.detail.hasOwnProperty('isDarkMode')) {
         updateParticleColor();
@@ -221,22 +237,75 @@ export default function LicensePortal() {
     };
   }, [isDarkMode]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className={`min-h-screen ${isDarkMode ? 'bg-black' : 'bg-gray-50'}`}>
+        <Navbar />
+        <div className="flex flex-col items-center justify-center min-h-screen px-4 -mt-16">
+          {/* Added Message Banner */}
+          <div className={`mb-8 p-4 rounded-lg ${
+            isDarkMode ? 'bg-amber-900/50' : 'bg-amber-100'
+          } max-w-md w-full text-center`}>
+            <h2 className={`text-xl font-semibold mb-2 ${
+              isDarkMode ? 'text-amber-200' : 'text-amber-800'
+            }`}>
+              License Portal Access Restricted
+            </h2>
+            <p className={`${
+              isDarkMode ? 'text-amber-300/80' : 'text-amber-700'
+            }`}>
+              To access the License Portal and manage your mining licenses, you need to be logged in. Please log in or create an account to continue.
+            </p>
+          </div>
+
+          <div className={`text-center p-8 rounded-lg ${
+            isDarkMode ? 'bg-gray-900' : 'bg-white'
+          } shadow-xl max-w-md w-full`}>
+            <h2 className={`text-2xl font-bold mb-4 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              Authentication Required
+            </h2>
+            <p className={`mb-6 ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Please log in or create an account to access the License Portal and manage your mining licenses.
+            </p>
+            <div className="space-y-4">
+              <Link href="/login" className={`block w-full py-2 px-4 rounded ${
+                isDarkMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-amber-500 hover:bg-amber-600'
+              } text-white text-center transition-colors`}>
+                Log In
+              </Link>
+              <Link href="/sign" className={`block w-full py-2 px-4 rounded ${
+                isDarkMode ? 'border border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white' 
+                : 'border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white'
+              } text-center transition-colors`}>
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`relative min-h-screen ${isDarkMode ? 'bg-black text-white' : 'bg-gray-50 text-gray-900'} overflow-hidden`}>
       <Navbar />
 
-      {/* 3D Background Canvas */}
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full z-0" />
 
-      {/* Dark/Light Mode Toggle */}
-     
-
-      {/* Main Content */}
       <main className="relative z-10 pt-28 pb-16">
         <div className="container mx-auto px-4">
-         
-
-          {/* Hero Section */}
           <div className="text-center mb-20">
             <motion.h1
               className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight"
@@ -255,27 +324,26 @@ export default function LicensePortal() {
               Streamlined management of mining permits and licenses for optimal operational efficiency.
             </motion.p>
           </div>
-           {/* Check Status Section */}
-           <div className="flex items-center justify-between p-3 rounded-lg shadow-sm border border-gray-200 max-w-sm mx-auto">
-  <div className="flex-1">
-    <h3 className="text-base font-semibold mb-1">Check Form Status</h3>
-    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
-      View your submission status
-    </p>
-  </div>
-  <Link href="/unlicense" legacyBehavior>
-    <a className={`flex items-center justify-center px-4 py-2 rounded text-sm font-medium ${
-      isDarkMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-amber-500 hover:bg-amber-600'
-    } text-white transition-colors`}>
-      Status
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-    </a>
-  </Link>
-</div><br></br><br></br>
 
-          {/* License Cards Section */}
+          <div className="flex items-center justify-between p-3 rounded-lg shadow-sm border border-gray-200 max-w-sm mx-auto">
+            <div className="flex-1">
+              <h3 className="text-base font-semibold mb-1">Check Form Status</h3>
+              <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+                View your submission status
+              </p>
+            </div>
+            <Link href="/unlicense" legacyBehavior>
+              <a className={`flex items-center justify-center px-4 py-2 rounded text-sm font-medium ${ 
+                isDarkMode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-amber-500 hover:bg-amber-600'
+              } text-white transition-colors`}>
+                Status
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </Link>
+          </div><br/><br/>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
             {licenses.map((license, index) => (
               <Link href={license.path} key={license.id} legacyBehavior>
@@ -320,7 +388,6 @@ export default function LicensePortal() {
             ))}
           </div>
 
-          {/* Success Stories Section */}
           <div className="mt-24 mb-20">
             <div className="text-center mb-16">
               <motion.h2
@@ -342,7 +409,6 @@ export default function LicensePortal() {
                 See how our licensing framework has helped businesses achieve their goals while maintaining regulatory compliance.
               </motion.p>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {successStories.map((story, index) => (
                 <motion.div
@@ -375,11 +441,9 @@ export default function LicensePortal() {
               ))}
             </div>
           </div>
-          
         </div>
       </main>
 
-      {/* Case Study Modal */}
       {selectedStory && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
@@ -401,7 +465,6 @@ export default function LicensePortal() {
         </div>
       )}
 
-      {/* Footer Section */}
       <footer
         className={`relative z-10 py-8 ${
           isDarkMode ? 'bg-gray-900' : 'bg-gray-800'

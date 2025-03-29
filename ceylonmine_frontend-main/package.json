@@ -21,6 +21,7 @@
     "@types/react-datepicker": "^6.2.0",
     "bootstrap": "^5.3.3",
     "framer-motion": "^12.4.7",
+    "js-cookie": "3.0.5",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.1.0",
     "leaflet-gesture-handling": "^1.2.2",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@netlify/plugin-nextjs": "5.10.1",
+    "@types/js-cookie": "3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
