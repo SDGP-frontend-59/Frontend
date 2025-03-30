@@ -219,7 +219,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      setMessage('Unable to connect to the server. Please try again later.');
+      setMessage('Incorrect Credentials. Try Again.');
       setIsError(true);
     }
   };

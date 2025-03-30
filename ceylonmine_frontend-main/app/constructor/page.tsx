@@ -86,63 +86,57 @@ export default function LicensedPage() {
       try {
         setAnnouncementsLoading(true);
         setAnnouncementsError(null);
-        const userid = Cookies.get("id");
-        console.log("Cookie")    
-        console.log(userid);    
+
+        // Get userId from cookie
+        const userid = Cookies.get('userId');
+        console.log('User ID from cookie:', userid);
+
         if (!userid) {
-          throw new Error('User ID not found');
+          throw new Error('User ID not found in cookies');
         }
 
-        const response = await fetch(`https://web-production-28de.up.railway.app/miner/announcements/${userid}`, {
+        const response = await fetch('https://web-production-28de.up.railway.app/miner/announcements', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-ID': userid
+            'X-User-ID': userid,
+            'Cookie': `userId=${userid}` // Include userId in Cookie header
           },
-          credentials: 'include' 
+          credentials: 'include' // Important for cookies
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch announcements');
+          const errorText = await response.text();
+          console.error('Response not OK:', response.status, errorText);
+          throw new Error(`Server responded with ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('Raw announcements data:', data);
+        console.log('Announcements response:', data);
 
-        // Check if data exists and has the expected structure
-        if (data && Array.isArray(data)) {
-          // If data is directly an array
-          const formattedAnnouncements: Announcement[] = data.map((item: any, index: number) => ({
-            content: item.content || item.toString(),
-            id: item.id || index + 1,
-            created_at: item.created_at || new Date().toISOString()
-          }));
-          setAnnouncements(formattedAnnouncements);
-        } else if (data && data.announcements && Array.isArray(data.announcements)) {
-          // If data has an announcements property that is an array
-          const formattedAnnouncements: Announcement[] = data.announcements.map((item: any, index: number) => ({
-            content: item.content || item.toString(),
-            id: item.id || index + 1,
-            created_at: item.created_at || new Date().toISOString()
-          }));
-          setAnnouncements(formattedAnnouncements);
-        } else {
-          // If the data structure is unexpected
-          console.error('Unexpected data structure:', data);
-          setAnnouncementsError('Invalid data format received from server');
-          setAnnouncements([]);
-        }
+        // Format announcements based on the backend response structure
+        const formattedAnnouncements = data.map((item: any, index: number) => ({
+          id: index + 1,
+          content: item.text || 'No content',
+          created_at: item.date || new Date().toISOString()
+        }));
+
+        setAnnouncements(formattedAnnouncements);
 
       } catch (err) {
-        console.error('Error in fetchAnnouncements:', err);
-        setAnnouncementsError(err instanceof Error ? err.message : 'An error occurred');
-        setAnnouncements([]); // Set empty array on error
+        console.error('Announcements fetch error:', err);
+        setAnnouncementsError(err instanceof Error ? err.message : 'Failed to fetch announcements');
       } finally {
         setAnnouncementsLoading(false);
       }
     };
 
-    fetchAnnouncements();
+    // Only fetch if we have a userId cookie
+    if (Cookies.get('userId')) {
+      fetchAnnouncements();
+    } else {
+      setAnnouncementsError('User ID not found. Please log in.');
+    }
   }, []);
 
   useEffect(() => {
@@ -510,7 +504,7 @@ export default function LicensedPage() {
               <div className="space-y-4">
                 {announcements.map((announcement) => (
                   <motion.div 
-                    key={announcement.id || Math.random()}
+                    key={announcement.id}
                     className={`flex items-center p-3 rounded-lg ${
                       isDarkMode 
                         ? 'bg-gray-800/50 hover:bg-gray-800/80' 
@@ -529,13 +523,11 @@ export default function LicensedPage() {
                       <p className={`font-medium ${
                         isDarkMode ? 'text-amber-300' : 'text-orange-700'
                       }`}>{announcement.content}</p>
-                      {announcement.created_at && (
-                        <p className={`text-sm ${
-                          isDarkMode ? 'text-amber-300/70' : 'text-orange-700/80'
-                        }`}>
-                          {new Date(announcement.created_at).toLocaleDateString()}
-                        </p>
-                      )}
+                      <p className={`text-sm ${
+                        isDarkMode ? 'text-amber-300/70' : 'text-orange-700/80'
+                      }`}>
+                        {announcement.created_at}
+                      </p>
                     </div>
                   </motion.div>
                 ))}
