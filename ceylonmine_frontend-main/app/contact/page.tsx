@@ -241,33 +241,39 @@ export default function Contact() {
       return;
     }
 
-    console.log("Submitting form data:", formData); // Log the form data
     try {
-      const response = await fetch('https://ceylonminebackend.up.railway.app/contact/submit', {
+      const response = await fetch('https://web-production-28de.up.railway.app/contact/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json(); // Parse the JSON response
+      // First check if the response is ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      // Check the status_code in the response
-      if (result.status_code === 201) {
-        setSuccessMessage(result.message || 'Complaint submitted successfully!');
+      const result = await response.json();
+      console.log("API Response:", result); // Debug log
+
+      // Check both status and data
+      if (response.status === 201 && result.data) {
+        setSuccessMessage('Contact message submitted successfully!');
+        // Clear form
         setFormData({
           email: '',
           name: '',
           message: ''
         });
       } else {
-        console.error("Server error:", result.error);
-        setSuccessMessage(`Error: ${result.error || 'Failed to submit complaint.'}`);
+        throw new Error(result.error || 'Failed to submit contact message');
       }
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error submitting form:', error);
-      setSuccessMessage('An error occurred. Please try again.');
+      setSuccessMessage(error instanceof Error ? error.message : 'An error occurred. Please try again.');
     }
   };
 

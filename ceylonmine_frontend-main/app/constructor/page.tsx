@@ -87,9 +87,20 @@ export default function LicensedPage() {
         setAnnouncementsLoading(true);
         setAnnouncementsError(null);
         const userid = Cookies.get("id");
-        console.log("userid ", userid);
+        console.log("Cookie")    
+        console.log(userid);    
+        if (!userid) {
+          throw new Error('User ID not found');
+        }
 
-        const response = await fetch('https://web-production-28de.up.railway.app/miner/announcements');
+        const response = await fetch(`https://web-production-28de.up.railway.app/miner/announcements/${userid}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-ID': userid
+          },
+          credentials: 'include' 
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch announcements');

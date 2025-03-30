@@ -191,7 +191,8 @@ export default function LoginPage() {
 
       const data = await response.json();
       console.log('Login response:', data);
-      Cookies.set("id", data.user.id);
+      Cookies.set("id", data.user.id, { expires: 1, path: '/' });
+      console.log("Cookie 'id' set to:", Cookies.get("id"));
 
       if (response.ok) {
         // Store token in a cookie
