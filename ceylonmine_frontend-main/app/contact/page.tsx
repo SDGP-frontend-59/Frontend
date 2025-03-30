@@ -234,6 +234,7 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSuccessMessage(''); // Clear any existing messages
 
     // Validate required fields
     if (!formData.email || !formData.name || !formData.message) {
@@ -242,38 +243,45 @@ export default function Contact() {
     }
 
     try {
+      // Show loading state
+      setSuccessMessage('Sending message...');
+
       const response = await fetch('https://web-production-28de.up.railway.app/contact/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          // Add CORS headers if needed
+          'Access-Control-Allow-Origin': '*',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          message: formData.message.trim()
+        }),
       });
 
-      // First check if the response is ok
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const result = await response.json();
-      console.log("API Response:", result); // Debug log
+      console.log('Server Response:', result); // Debug log
 
-      // Check both status and data
       if (response.status === 201 && result.data) {
-        setSuccessMessage('Contact message submitted successfully!');
-        // Clear form
-        setFormData({
-          email: '',
-          name: '',
-          message: ''
-        });
+        // Success case
+        setSuccessMessage('Thank you! Your message has been sent successfully.');
+        setFormData({ email: '', name: '', message: '' }); // Clear form
+      } else if (response.status === 400) {
+        // Validation error
+        setSuccessMessage(result.details || 'Please check your input and try again.');
       } else {
-        throw new Error(result.error || 'Failed to submit contact message');
+        // Other errors
+        throw new Error(result.error || 'Failed to send message');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setSuccessMessage(error instanceof Error ? error.message : 'An error occurred. Please try again.');
+      console.error('Form submission error:', error);
+      setSuccessMessage(
+        error instanceof Error 
+          ? `Error: ${error.message}` 
+          : 'An error occurred while sending your message. Please try again.'
+      );
     }
   };
 
@@ -402,9 +410,17 @@ export default function Contact() {
                   </motion.button>
                 </div>
                 {successMessage && (
-                  <div className={`mt-4 p-4 rounded-md ${
-                    isDarkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800'
-                  }`}>
+                  <div 
+                    className={`mt-4 p-4 rounded-md ${
+                      successMessage.includes('successfully')
+                        ? isDarkMode 
+                          ? 'bg-green-900 text-green-200' 
+                          : 'bg-green-100 text-green-800'
+                        : isDarkMode
+                          ? 'bg-red-900 text-red-200'
+                          : 'bg-red-100 text-red-800'
+                    }`}
+                  >
                     {successMessage}
                   </div>
                 )}
