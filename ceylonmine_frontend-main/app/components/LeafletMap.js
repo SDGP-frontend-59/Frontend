@@ -104,7 +104,12 @@ const LeafletMap = ({ isDarkMode }) => {
             <div class="popup-description">${location.description}</div>
             <div class="additional-content" style="display: ${isExpanded ? "block" : "none"}">
               <p>${location.longDes || "Additional details not available."}</p>
-              ${location.image ? `<img src="/images/${location.image}" alt="${location.name}" class="popup-image" />` : ""}
+              ${location.image ? 
+                `<div class="popup-image">
+                  <img src="${location.image}" alt="${location.name}" class="location-image" />
+                 </div>` 
+                : ''
+              }
             </div>
             <div class="popup-buttons">
               <button class="see-more-btn">${isExpanded ? "See Less" : "See More"}</button>
