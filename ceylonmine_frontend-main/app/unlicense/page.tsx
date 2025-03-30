@@ -340,7 +340,7 @@ export default function LicenseTracking() {
       fileDescription: "Document Description",
       attachFile: "Attach File",
       submit: "Submit",
-      attachedDocuments: "Attached Documents",
+      // attachedDocuments: "Attached Documents",
       noAttachments: "No documents attached yet.",
       downloadFile: "Download",
       viewMore: "View All Announcements",
@@ -370,7 +370,7 @@ export default function LicenseTracking() {
       fileDescription: "ලේඛන විස්තරය",
       attachFile: "ලේඛනය අමුණන්න",
       submit: "ඉදිරිපත් කරන්න",
-      attachedDocuments: "අමුණා ඇති ලේඛන",
+      // attachedDocuments: "අමුණා ඇති ලේඛන",
       noAttachments: "තවමත් ලේඛන අමුණා නැත.",
       downloadFile: "බාගන්න",
       viewMore: "සියලුම නිවේදන බලන්න",
@@ -745,12 +745,12 @@ export default function LicenseTracking() {
               </div>
               
               {/* Attached Files List */}
-              <div className={`rounded-xl p-8 ${
+              {/* <div className={`rounded-xl p-8 ${
                 isDarkMode ? 'bg-gray-900 bg-opacity-70' : 'bg-white shadow-lg'
               }`}>
                 <h2 className="text-2xl font-bold mb-4">{t.attachedDocuments}</h2>
                 {renderDocuments()}
-              </div>
+              </div> */}
             </motion.div>
           </div>
         </div>
