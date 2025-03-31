@@ -98,22 +98,32 @@ const LeafletMap = ({ isDarkMode }) => {
           title: location.name,
         });
 
-        const createPopupContent = (isExpanded = false) => `
-          <div class="custom-popup">
-            <h3>${location.name}</h3>
-            <div class="popup-description">${location.description}</div>
-            <div class="additional-content" style="display: ${isExpanded ? "block" : "none"}">
-              <p>${location.longDes || "Additional details not available."}</p>
-              ${location.image ? `<img src="/images/${location.image}" alt="${location.name}" class="popup-image" />` : ""}
+        const createPopupContent = (isExpanded = false) => {
+          // Get the image URL from the location object
+          const imageUrl = location.image_url || location.image || "";
+          
+          return `
+            <div class="custom-popup">
+              <h3>${location.name}</h3>
+              <div class="popup-description">${location.description}</div>
+              <div class="additional-content" style="display: ${isExpanded ? "block" : "none"}">
+                <p>${location.longDes || "Additional details not available."}</p>
+                ${imageUrl ? `<img src="${imageUrl}" alt="${location.name}" style="width: 100%; margin-top: 8px; border-radius: 8px;">` : '<p>No image available</p>'}
+              </div>
+              <div class="popup-buttons">
+                <button class="see-more-btn">${isExpanded ? "See Less" : "See More"}</button>
+                <button class="google-maps-btn">Open in Maps</button>
+              </div>
             </div>
-            <div class="popup-buttons">
-              <button class="see-more-btn">${isExpanded ? "See Less" : "See More"}</button>
-              <button class="google-maps-btn">Open in Maps</button>
-            </div>
-          </div>
-        `;
+          `;
+        };
 
-        marker.bindPopup(createPopupContent(false));
+        marker.bindPopup(createPopupContent(false), { 
+          maxWidth: 300, 
+          minWidth: 250,
+          closeButton: true,
+          className: 'custom-popup-container'
+        });
 
         marker.on("popupopen", () => {
           const popup = marker.getPopup();
@@ -155,6 +165,10 @@ const LeafletMap = ({ isDarkMode }) => {
             if (!map || !markersLayer) return;
 
             data.forEach((location) => {
+              // Add debug logging to see the full location object
+              console.log("Full location object:", location);
+              console.log("Image URL:", location.image);
+              
               const marker = createCustomMarker(location);
               markersLayer.addLayer(marker);
             });
