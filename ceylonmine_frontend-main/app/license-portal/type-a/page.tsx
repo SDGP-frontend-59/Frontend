@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Navbar from '../../navbar/page'
 import * as THREE from 'three';
 import Swal from 'sweetalert2';
+import Cookies from 'js-cookie';
 
 interface FormData {
   exploration_license_no: string;
@@ -347,6 +348,21 @@ export default function TypeALicense() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Get user ID from cookies
+    const userId = Cookies.get("id");
+    if (!userId) {
+      await Swal.fire({
+        title: 'Error!',
+        text: 'Please login first to submit an application',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316',
+        background: isDarkMode ? '#1f2937' : '#ffffff',
+        color: isDarkMode ? '#ffffff' : '#333333'
+      });
+      return;
+    }
+
     // Validate form before submission
     if (!validateForm()) {
       await Swal.fire({
@@ -370,26 +386,18 @@ export default function TypeALicense() {
 
     const data = new FormData();
     
-    // Add license type
+    // Add user ID and license type
+    data.append('user_id', userId);
     data.append('licenseType', 'type-a');
     
-    // Helper function to append nested objects
-    const appendNestedObject = (prefix: string, obj: Partial<FormData>) => {
-      Object.entries(obj).forEach(([key, value]) => {
-        const fullKey = prefix ? `${prefix}[${key}]` : key;
-        
-        if (value instanceof File) {
-          data.append(fullKey, value);
-        } else if (value && typeof value === 'object') {
-          appendNestedObject(fullKey, value);
-        } else if (value !== null && value !== undefined) {
-          data.append(fullKey, value.toString());
-        }
-      });
-    };
-
     // Append all form data
-    appendNestedObject('', formData);
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value instanceof File) {
+        data.append(key, value);
+      } else if (value !== null && value !== undefined) {
+        data.append(key, value.toString());
+      }
+    });
 
     try {
       // Show loading state
@@ -404,10 +412,12 @@ export default function TypeALicense() {
         }
       });
 
-      const response = await fetch('https://ceylonminebackend.up.railway.app/license/submit', {
+      const baseUrl = "https://web-production-28de.up.railway.app";
+      const response = await fetch(`${baseUrl}/license/submit`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
+          'X-User-ID': userId
         },
         body: data,
       });
@@ -434,14 +444,8 @@ export default function TypeALicense() {
         // Try to get error message from response
         let errorMessage = 'Failed to submit license application';
         try {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorData.error || errorMessage;
-          } else {
-            const textError = await response.text();
-            errorMessage = textError || errorMessage;
-          }
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
         } catch (parseError) {
           console.error('Error parsing response:', parseError);
         }

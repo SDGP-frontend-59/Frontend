@@ -138,7 +138,6 @@ export default function LicenseTracking() {
         };
 
         try {
-          // Fetch application details with proper error handling
           console.log("Fetching application details...");
           const appResponse = await fetch(
             `${baseUrl}/unlicensedminer/application?user_id=${userId}`,
@@ -152,10 +151,29 @@ export default function LicenseTracking() {
 
           if (!appResponse.ok) {
             const errorText = await appResponse.text();
-            console.error("Application error response:", errorText);
-            throw new Error(
-              `Application API returned ${appResponse.status}: ${errorText}`
-            );
+            console.log("Application not found or other error:", errorText);
+            
+            // Set default values when application is not found
+            setApplicationDetails({
+              licenseId: "Applicants only",
+              applicantName: "Applicants only",
+              applicationType: "Applicants only",
+              submissionDate: "Applicants only",
+              location: "Applicants only",
+              estimatedCompletionDate: "Applicants only",
+              status: 0
+            });
+            setCurrentStatus(0);
+            setDocuments([]);
+            
+            // Don't throw error for 404, just return
+            if (appResponse.status === 404) {
+              setError("No application found for this user. Please submit a new application.");
+              return;
+            }
+            
+            // For other errors, throw
+            throw new Error(`API Error: ${appResponse.status} - ${errorText}`);
           }
 
           const appData = await appResponse.json();
@@ -200,25 +218,31 @@ export default function LicenseTracking() {
           setDocuments(documentsData.documents || []);
 
         } catch (fetchError) {
-          console.error("API fetch error:", fetchError);
-
-          // Use mock data if API fails
+          console.log("API fetch error:", fetchError);
+          
+          // Set default state
           setApplicationDetails({
-            licenseId: "Applicants only",
-            applicantName: "Applicants only",
-            applicationType: "Applicants only",
-            submissionDate: "Applicants only",
-            location: "Applicants only",
-            estimatedCompletionDate: "Applicants only",
+            licenseId: "Not Available",
+            applicantName: "Error Loading Data",
+            applicationType: "N/A",
+            submissionDate: "N/A",
+            location: "N/A",
+            estimatedCompletionDate: "N/A",
             status: 0
           });
           setCurrentStatus(0);
           setDocuments([]);
-          setError(`Could not fetch from API: ${handleError(fetchError)}`);
+          
+          // Set user-friendly error message
+          setError(
+            fetchError instanceof Error 
+              ? `Unable to load application: ${fetchError.message}` 
+              : "Unable to load application data"
+          );
         }
       } catch (err) {
         console.error('Error in fetchApplicationData:', err);
-        setError(handleError(err));
+        setError(err instanceof Error ? err.message : "An unexpected error occurred");
       } finally {
         setLoading(false);
       }
