@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Navbar from '../../navbar/page'
 import * as THREE from 'three';
 import Swal from 'sweetalert2';
+import Cookies from "js-cookie";
 
 interface FormData {
   exploration_license_no: string;
@@ -357,7 +358,63 @@ export default function TypeALicense() {
         confirmButtonColor: '#f97316',
         background: isDarkMode ? '#1f2937' : '#ffffff',
         color: isDarkMode ? '#ffffff' : '#333333',
-        iconColor: isDarkMode ? '#ef4444' : '#dc2626',
+      });
+      return;
+    }
+
+    try {
+      // Get user ID from cookies
+      const userId = Cookies.get("id");
+      if (!userId) {
+        throw new Error("User ID not found in cookies");
+      }
+
+      console.log("Submitting form for user ID:", userId);
+
+      // Base URL for API
+      const baseUrl = "https://web-production-28de.up.railway.app";
+
+      // Set headers with user ID
+      const headers = {
+        "X-User-ID": userId,
+        "Accept": "application/json",
+      };
+
+      const data = new FormData();
+      data.append('licenseType', 'type-a');
+
+      // Append form data
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== null) {
+          data.append(key, value);
+        }
+      });
+
+      const response = await fetch(`${baseUrl}/license/submit`, {
+        method: 'POST',
+        headers: headers,
+        body: data,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Form submission error response:", errorText);
+        throw new Error(`API returned ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("Form submission result:", result);
+
+      // Success message
+      await Swal.fire({
+        title: 'Success!',
+        text: 'Your license application has been submitted successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f97316',
+        background: isDarkMode ? '#1f2937' : '#ffffff',
+        color: isDarkMode ? '#ffffff' : '#333333',
+        iconColor: isDarkMode ? '#fbbf24' : '#f97316',
         showClass: {
           popup: 'animate__animated animate__fadeInUp animate__faster'
         },
@@ -365,117 +422,13 @@ export default function TypeALicense() {
           popup: 'animate__animated animate__fadeOutDown animate__faster'
         }
       });
-      return;
-    }
-
-    const data = new FormData();
-    
-    // Add license type
-    data.append('licenseType', 'type-a');
-    
-    // Helper function to append nested objects
-    const appendNestedObject = (prefix: string, obj: Partial<FormData>) => {
-      Object.entries(obj).forEach(([key, value]) => {
-        const fullKey = prefix ? `${prefix}[${key}]` : key;
-        
-        if (value instanceof File) {
-          data.append(fullKey, value);
-        } else if (value && typeof value === 'object') {
-          appendNestedObject(fullKey, value);
-        } else if (value !== null && value !== undefined) {
-          data.append(fullKey, value.toString());
-        }
-      });
-    };
-
-    // Append all form data
-    appendNestedObject('', formData);
-
-    try {
-      // Show loading state
-      Swal.fire({
-        title: 'Submitting Application',
-        text: 'Please wait while we process your application...',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        willOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      const response = await fetch('https://ceylonminebackend.up.railway.app/license/submit', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-        },
-        body: data,
-      });
-      
-      if (response.ok) {
-        // Success message
-        await Swal.fire({
-          title: 'Success!',
-          text: 'Your license application has been submitted successfully.',
-          icon: 'success',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#f97316',
-          background: isDarkMode ? '#1f2937' : '#ffffff',
-          color: isDarkMode ? '#ffffff' : '#333333',
-          iconColor: isDarkMode ? '#fbbf24' : '#f97316',
-          showClass: {
-            popup: 'animate__animated animate__fadeInUp animate__faster'
-          },
-          hideClass: {
-            popup: 'animate__animated animate__fadeOutDown animate__faster'
-          }
-        });
-      } else {
-        // Try to get error message from response
-        let errorMessage = 'Failed to submit license application';
-        try {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorData.error || errorMessage;
-          } else {
-            const textError = await response.text();
-            errorMessage = textError || errorMessage;
-          }
-        } catch (parseError) {
-          console.error('Error parsing response:', parseError);
-        }
-        
-        console.error('Server response:', {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-        
-        // Show error message
-        await Swal.fire({
-          title: 'Error!',
-          text: errorMessage,
-          icon: 'error',
-          confirmButtonText: 'OK',
-          confirmButtonColor: '#f97316',
-          background: isDarkMode ? '#1f2937' : '#ffffff',
-          color: isDarkMode ? '#ffffff' : '#333333',
-          iconColor: isDarkMode ? '#ef4444' : '#dc2626',
-          showClass: {
-            popup: 'animate__animated animate__fadeInUp animate__faster'
-          },
-          hideClass: {
-            popup: 'animate__animated animate__fadeOutDown animate__faster'
-          }
-        });
-      }
     } catch (error) {
-      console.error('Network error:', error);
-      // Show network error message
+      console.error("Form submission error:", error);
+
+      // Show error message
       await Swal.fire({
-        title: 'Network Error!',
-        text: 'A network error occurred while submitting the application. Please check your connection and try again.',
+        title: 'Error!',
+        text: 'An error occurred while submitting the application. Please try again later.',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f97316',
