@@ -17,6 +17,7 @@ import "./LeafletMap.css";
 
 const LeafletMap = ({ isDarkMode }) => {
   const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
 
   useEffect(() => {
     let map = null;
@@ -32,7 +33,7 @@ const LeafletMap = ({ isDarkMode }) => {
     }
 
     const initializeMap = () => {
-      if (!mapRef.current || map !== null) return;
+      if (!mapRef.current || mapInstanceRef.current) return;
 
       map = L.map(mapRef.current, {
         zoomControl: false,
@@ -44,6 +45,8 @@ const LeafletMap = ({ isDarkMode }) => {
         minZoom: 7,
         maxZoom: 18,
       });
+
+      mapInstanceRef.current = map;
 
       map.setView([7.8731, 80.7718], 7);
 
@@ -99,9 +102,8 @@ const LeafletMap = ({ isDarkMode }) => {
         });
 
         const createPopupContent = (isExpanded = false) => {
-          // Get the image URL from the location object
           const imageUrl = location.image_url || location.image || "";
-          
+
           return `
             <div class="custom-popup">
               <h3>${location.name}</h3>
@@ -165,7 +167,6 @@ const LeafletMap = ({ isDarkMode }) => {
             if (!map || !markersLayer) return;
 
             data.forEach((location) => {
-              // Add debug logging to see the full location object
               console.log("Full location object:", location);
               console.log("Image URL:", location.image);
               
@@ -246,11 +247,13 @@ const LeafletMap = ({ isDarkMode }) => {
 
       return () => {
         window.removeEventListener("resize", handleResize);
-        if (map) {
-          map.remove();
-          map = null;
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
         }
-        markersLayer = null;
+        if (markersLayer) {
+          markersLayer.clearLayers();
+        }
       };
     };
 

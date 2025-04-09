@@ -17,7 +17,27 @@ const Map = () => {
   const canvasRef = useRef(null);
   const router = useRouter();
   const [expandedFaq, setExpandedFaq] = useState(null);
-  
+
+  // Add theme change listener
+  useEffect(() => {
+    const handleThemeChange = (event) => {
+      const newTheme = event.detail.isDarkMode;
+      setIsDarkMode(newTheme);
+    };
+
+    window.addEventListener('themeChange', handleThemeChange);
+
+    // Get initial theme from localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark');
+    }
+
+    return () => {
+      window.removeEventListener('themeChange', handleThemeChange);
+    };
+  }, []);
+
   // Common Mining FAQs that don't require database
   const miningFaqs = [
     {
@@ -91,7 +111,7 @@ const Map = () => {
     // Create sand material
     const particlesMaterial = new THREE.PointsMaterial({
       size: 0.005,
-      color: 0xD2B48C, // Sand color
+      color: isDarkMode ? 0xD2B48C : 0xFFD700, // Update particle color based on theme
       transparent: true,
       blending: THREE.AdditiveBlending,
       opacity: 0.4, // Lower opacity so it doesn't interfere with map visibility
@@ -145,7 +165,7 @@ const Map = () => {
       document.removeEventListener('mousemove', onDocumentMouseMove);
       window.removeEventListener('resize', onWindowResize);
     };
-  }, []);
+  }, [isDarkMode]); // Add isDarkMode as dependency
 
   return (
     <><div
@@ -401,7 +421,7 @@ const Map = () => {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <span className="text-orange-500">MINING</span> VEHICLE FAQ
+              <span className="text-orange-500">MINING</span>  FAQ
             </motion.h2>
             
             <motion.p 
