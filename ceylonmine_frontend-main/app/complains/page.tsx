@@ -170,7 +170,7 @@ export default function ComplaintForm() {
     }
 
     try {
-      const response = await fetch("https://ceylonminebackend.up.railway.app/complaints/submit", {
+      const response = await fetch("http://localhost:5001/complaints/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

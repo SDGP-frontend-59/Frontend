@@ -404,7 +404,7 @@ export default function TypeALicense() {
         }
       });
 
-      const response = await fetch('https://ceylonminebackend.up.railway.app/license/submit', {
+      const response = await fetch('http://localhost:5001/license/submit', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

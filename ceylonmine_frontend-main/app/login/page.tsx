@@ -530,7 +530,7 @@ export default function LoginPage() {
 
     try {
       console.log('Attempting login...');
-      const response = await fetch('https://web-production-28de.up.railway.app/auth/login', {
+      const response = await fetch('http://localhost:5001/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

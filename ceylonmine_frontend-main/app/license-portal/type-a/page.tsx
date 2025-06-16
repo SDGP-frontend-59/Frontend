@@ -372,7 +372,7 @@ export default function TypeALicense() {
       console.log("Submitting form for user ID:", userId);
 
       // Base URL for API
-      const baseUrl = "https://web-production-28de.up.railway.app";
+      const baseUrl = "http://localhost:5001";
 
       // Set headers with user ID
       const headers = {

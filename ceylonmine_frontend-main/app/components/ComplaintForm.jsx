@@ -44,7 +44,7 @@ export default function ComplaintForm() {
       setEmailError(""); // Clear error if email is valid
     }
 
-    const response = await fetch("http://127.0.0.1:5000/submit_complaint", {
+    const response = await fetch("http://localhost:5001/submit_complaint", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

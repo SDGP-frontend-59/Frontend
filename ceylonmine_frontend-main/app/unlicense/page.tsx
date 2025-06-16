@@ -129,7 +129,7 @@ export default function LicenseTracking() {
         console.log("Fetching data for user ID:", userId);
 
         // Base URL for API
-        const baseUrl = "https://web-production-28de.up.railway.app";
+        const baseUrl = "http://localhost:5001";
 
         // Set headers for all requests
         const headers = {
@@ -453,7 +453,7 @@ export default function LicenseTracking() {
       formData.append('description', fileData.description);
       formData.append('user_id', userId);
 
-      const baseUrl = "https://web-production-28de.up.railway.app";
+      const baseUrl = ":http://localhost:5001";
       
       await fetch(`${baseUrl}/unlicensedminer/upload-document?user_id=${userId}`, {
         method: 'POST',

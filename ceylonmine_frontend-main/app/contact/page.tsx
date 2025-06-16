@@ -880,7 +880,7 @@ export default function Contact() {
       // Show loading state
       setSuccessMessage('Sending message...');
 
-      const response = await fetch('https://web-production-28de.up.railway.app/contact/submit', {
+      const response = await fetch('http://localhost:5001/contact/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

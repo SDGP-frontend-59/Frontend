@@ -206,7 +206,7 @@ export default function Signup() {
         password: formData.password
       });
 
-      const response = await fetch('https://web-production-28de.up.railway.app/auth/signup', {
+      const response = await fetch('http://localhost:5001/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

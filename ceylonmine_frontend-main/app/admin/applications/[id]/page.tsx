@@ -20,7 +20,7 @@ export default function AdminApplicationView() {
   const updateStatus = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/applications/${params.id}/status`,
+        `http://localhost:5001/api/applications/${params.id}/status`,
         {
           method: 'PUT',
           headers: {
@@ -42,7 +42,7 @@ export default function AdminApplicationView() {
 
   const fetchApplication = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/applications/${params.id}`);
+      const response = await fetch(`http://localhost:5001/api/applications/${params.id}`);
       if (response.ok) {
         const data = await response.json();
         setApplication(data);

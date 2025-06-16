@@ -12,7 +12,7 @@ export default function AdminComplaints() {
 
   const fetchComplaints = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/get_complaints");
+      const response = await fetch("http://localhost:5001/get_complaints");
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -27,7 +27,7 @@ export default function AdminComplaints() {
   // Handle status change
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/update_complaint/${id}`, {
+      const response = await fetch(`http://localhost:5001/update_complaint/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -48,7 +48,7 @@ export default function AdminComplaints() {
   const handleEditComplaint = async (complaint) => {
     if (updatedComplaint) {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/update_complaint/${complaint.id}`, {
+        const response = await fetch(`http://localhost:5001/update_complaint/${complaint.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ complaint: updatedComplaint }),
@@ -85,7 +85,7 @@ export default function AdminComplaints() {
   
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`http://127.0.0.1:5000/delete_complaint/${id}`, {
+        const response = await fetch(`http://localhost:5001/delete_complaint/${id}`, {
           method: "DELETE",
         });
   
