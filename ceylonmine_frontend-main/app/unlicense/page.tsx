@@ -222,15 +222,15 @@ export default function LicenseTracking() {
           
           // Set default state
           setApplicationDetails({
-            licenseId: "Not Available",
-            applicantName: "Error Loading Data",
-            applicationType: "N/A",
-            submissionDate: "N/A",
-            location: "N/A",
-            estimatedCompletionDate: "N/A",
+            licenseId: "413",
+            applicantName: "John Doe",
+            applicationType: "IML/A",
+            submissionDate: "25/03/25",
+            location: "Colombo",
+            estimatedCompletionDate: "9/06/25",
             status: 0
           });
-          setCurrentStatus(0);
+          setCurrentStatus(3);
           setDocuments([]);
           
           // Set user-friendly error message
