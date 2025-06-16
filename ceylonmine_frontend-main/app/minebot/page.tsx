@@ -5,6 +5,7 @@ import { ThemeContext } from './layout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Image from 'next/image';
+import { PREDEFINED_ANSWERS, DEFAULT_RESPONSE, GREETING } from './constants';
 
 interface Message {
   id: number;
@@ -39,103 +40,55 @@ export default function MineBot() {
   const [isTyping, setIsTyping] = useState(false);
   const [isError, setIsError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
-  const [isApiAvailable, setIsApiAvailable] = useState(false);
+  const [isApiAvailable, setIsApiAvailable] = useState(true); // Always set to true
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Check API availability
-  const checkApiAvailability = async () => {
-    try {
-      const response = await fetch('/api/health-check', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      setIsApiAvailable(response.ok);
-    } catch (error) {
-      setIsApiAvailable(false);
-    }
-  };
-
-  // Initial API check and periodic polling
-  useEffect(() => {
-    checkApiAvailability();
-    const interval = setInterval(checkApiAvailability, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   // Auto-scroll to bottom of messages - removed smooth behavior
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView();
   }, [messages]);
 
-  // AI-powered response generation
-  const generateAIResponse = async (userMessage: string) => {
+  // Hardcoded response generation
+  const generateResponse = (userMessage: string) => {
     setIsTyping(true);
-    setIsError(false);
     
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: messages.map(({ role, content }) => ({ role, content })),
-          input: userMessage,
-        }),
-      });
-
-      // Check content type
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server returned non-JSON response. Please try again later.');
-      }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('API Error:', data);
-        throw new Error(data.error || 'Failed to get response from AI');
-      }
-
-      if (!data.message || !data.message.content) {
-        throw new Error('Invalid response format from API');
-      }
-
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          id: Date.now(), 
-          role: data.message.role,
-          content: data.message.content
-        }]);
-        setIsTyping(false);
-      }, 1000);
+    // Simulate API delay
+    setTimeout(() => {
+      const response = PREDEFINED_ANSWERS.get(userMessage) || DEFAULT_RESPONSE;
       
-    } catch (error) {
-      console.error("Error generating AI response:", error);
-      setIsError(true);
-      setMessages(prev => [...prev, { 
-        id: Date.now(), 
+      setMessages(prev => [...prev, {
+        id: Date.now(),
         role: 'assistant',
-        content: `I apologize, but I encountered an issue: ${error instanceof Error ? error.message : 'Unknown error occurred'}. Please try again.`
+        content: response
       }]);
+      
       setIsTyping(false);
-    }
+    }, 1500); // Simulate typing delay
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-    const userMessage = inputValue;
-    setMessages(prev => [...prev, { 
-      id: Date.now(), 
+    
+    setMessages(prev => [...prev, {
+      id: Date.now(),
       role: 'user',
-      content: userMessage 
+      content: inputValue
     }]);
+    
+    const userMessage = inputValue;
     setInputValue("");
-    generateAIResponse(userMessage);
+    generateResponse(userMessage);
   };
+
+  // Replace initial message
+  useEffect(() => {
+    setMessages([{
+      id: 1,
+      role: 'assistant',
+      content: GREETING
+    }]);
+  }, []);
 
   return (
     <>
