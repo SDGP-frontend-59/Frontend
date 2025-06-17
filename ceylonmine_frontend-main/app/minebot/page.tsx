@@ -9,7 +9,7 @@ import { PREDEFINED_ANSWERS, DEFAULT_RESPONSE, GREETING } from './constants';
 
 interface Message {
   id: number;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
@@ -39,6 +39,7 @@ export default function MineBot() {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(true); // Add success state
   const [imageLoading, setImageLoading] = useState(true);
   const [isApiAvailable, setIsApiAvailable] = useState(true); // Always set to true
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -52,15 +53,23 @@ export default function MineBot() {
   const generateResponse = (userMessage: string) => {
     setIsTyping(true);
     
+    // Show success message
+    const successMessage = {
+      id: Date.now(),
+      role: 'system',
+      content: 'Message sent successfully!'
+    };
+    setMessages(prev => [...prev, successMessage]);
+    
     // Simulate API delay
     setTimeout(() => {
       const response = PREDEFINED_ANSWERS.get(userMessage) || DEFAULT_RESPONSE;
       
-      setMessages(prev => [...prev, {
+      setMessages(prev => prev.filter(msg => msg.role !== 'system').concat({
         id: Date.now(),
         role: 'assistant',
         content: response
-      }]);
+      }));
       
       setIsTyping(false);
     }, 1500); // Simulate typing delay
@@ -158,7 +167,7 @@ export default function MineBot() {
                             ? 'bg-gray-800 text-white prose prose-invert max-w-none' 
                             : 'bg-gray-100 text-gray-900 prose max-w-none'
                           : 'bg-orange-500 text-white'
-                      } ${isError && message.role === 'assistant' ? 'border-red-500 border' : ''}`}
+                      } ${isSuccess && message.role === 'assistant' ? 'border-green-500 border shadow-green-500/20 shadow-lg' : ''}`}
                     >
                       {message.role === 'assistant' ? (
                         <div className="break-words">
